@@ -1,0 +1,20 @@
+PokeBall,PokeBall,1
+PokeBall,GreatBall,1.5
+PokeBall,UltraBall,2
+PokeBall,MasterBall,255
+Potion,Potion,20
+Potion,SuperPotion,50
+Potion,HyperPotion,200
+Restore,MaxPotion,False
+Restore,FullRestore,True
+Revive,Revive,50
+Revive,MaxRevive,100
+Ether,Ether,False
+Ether,MaxEther,True
+Elixir,Elixir,False
+Elixir,MaxElixir,True
+Ailment,Antidote,PSN
+Ailment,Parlyz Heal,PAR
+Ailment,Awakening,SLP
+Ailment,Burn Heal,BRN
+Ailment,Ice Heal,FRZ
