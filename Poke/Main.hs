@@ -10,19 +10,22 @@ import Graphics.UI.Gtk.Builder hiding (get)
 import Pokemon
 import Battle
 import Parse
+import GUI
 
---main :: IO ()
---main = do
---    putStrLn "BEGIN"
---    let left = undefined
---        right = undefined
---    runStateT battle (BattleState left right)
 
 main :: IO ()
 main = do
     pokeMap <- parsePokemon
     moveMap <- parseMoves
     itemMap <- parseItems
+
+    teams <- newEmptyMVar
+
+    forkIO (selection pokeMap teams "Left")
+    leftTeam <- takeMVar teams
+
+    forkIO (selection pokeMap teams "Right")
+    rightTeam <- takeMVar teams
 
     print pokeMap
     print moveMap

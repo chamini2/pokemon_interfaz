@@ -1,10 +1,13 @@
 module Main where
 
 import Control.Monad.State
+import Control.Concurrent
+import Control.Concurrent.MVar
 
 import Pokemon
 import Battle
 import Parse
+import GUI
 
 
 -- ELIMINAR AL QUITAR TRAINERS
@@ -15,78 +18,56 @@ main = do
     pokeMap <- parsePokemon
     moveMap <- parseMoves
     itemMap <- parseItems
-    print pokeMap
-    print moveMap
-    print itemMap
-    (winner, st) <- runStateT battle (BattleState leftTR rightTR)
-    print winner
+
+    teams <- newEmptyMVar
+
+    {-print pokeMap-}
+    {-print moveMap-}
+    {-print itemMap-}
+
+    forkIO (selection pokeMap teams "Left")
+    leftTeamS <- takeMVar teams
+
+    let leftTeam = map (\s -> Monster
+                            { species   = s
+                            , nickname  = ""
+                            , lvl       = 1
+                            , hpLeft    = 100
+                            , moves     = listArray (0,0) [MonsterMove (Move "tackle" Normal True 15 20) 10]
+                            , stats     = Stats 10 10 10 10 10 10
+                            , indV      = Stats 10 10 10 10 10 10
+                            , effV      = Stats 10 10 10 10 10 10
+                            , condition = NONE
+                                } ) leftTeamS
+
+    forkIO (selection pokeMap teams "Right")
+    rightTeamS <- takeMVar teams
+
+    let rightTeam = map (\s -> Monster
+                            { species   = s
+                            , nickname  = ""
+                            , lvl       = 1
+                            , hpLeft    = 100
+                            , moves     = listArray (0,0) [MonsterMove (Move "tackle" Normal True 15 20) 10]
+                            , stats     = Stats 10 10 10 10 10 10
+                            , indV      = Stats 10 10 10 10 10 10
+                            , effV      = Stats 10 10 10 10 10 10
+                            , condition = NONE
+                                } ) rightTeamS
 
 
-leftTR = Trainer
+    {-(winner, st) <- runStateT battle (BattleState (leftTR leftTeam) (rightTR rightTeam))-}
+    {-print winner-}
+
+
+leftTR team = Trainer
     { active    = 0
-    , pokeballs = listArray (0,1) $
-        [ Monster
-            { species = Species 3 "venasaur" [Bug] (Stats 10 10 10 10 10 10) Nothing []
-            , nickname = "ONE"
-            , lvl = 80
-            , hpLeft = 0
-            , moves = listArray (0,0) [MonsterMove (Move "tackle" Normal True 15 20) 10]
-            , stats = Stats 10 10 10 10 10 10
-            , indV = Stats 10 10 10 10 10 10
-            , effV = Stats 10 10 10 10 10 10
-            , condition = NONE
-            }
-        , Monster
-            { species = Species 3 "venasaur" [Bug] (Stats 10 10 10 10 10 10) Nothing []
-            , nickname = "TWO"
-            , lvl = 80
-            , hpLeft = 100
-            , moves = listArray (0,15) [MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10, MonsterMove (Move "tackle" Normal True 15 20) 10]
-            , stats = Stats 10 10 10 10 10 10
-            , indV = Stats 10 10 10 10 10 10
-            , effV = Stats 10 10 10 10 10 10
-            , condition = NONE
-            }
-        ]
+    , pokeballs = listArray (0, ((length team) - 1)) team
     , items = []
     }
 
-rightTR = Trainer
-    { active    = 1
-    , pokeballs = listArray (0,2) $
-        [ Monster
-            { species = Species 3 "venasaur" [Bug] (Stats 10 10 10 10 10 10) Nothing []
-            , nickname = "UNO"
-            , lvl = 80
-            , hpLeft = 100
-            , moves = listArray (0,0) [MonsterMove (Move "tackle" Normal True 15 20) 10]
-            , stats = Stats 10 10 10 10 10 10
-            , indV = Stats 10 10 10 10 10 10
-            , effV = Stats 10 10 10 10 10 10
-            , condition = NONE
-            }
-        , Monster
-            { species = Species 3 "venasaur" [Bug] (Stats 10 10 10 10 10 10) Nothing []
-            , nickname = "DOS"
-            , lvl = 80
-            , hpLeft = 0
-            , moves = listArray (0,0) [MonsterMove (Move "tackle" Normal True 15 20) 10]
-            , stats = Stats 10 10 10 10 10 10
-            , indV = Stats 10 10 10 10 10 10
-            , effV = Stats 10 10 10 10 10 10
-            , condition = NONE
-            }
-        , Monster
-            { species = Species 3 "venasaur" [Bug] (Stats 10 10 10 10 10 10) Nothing []
-            , nickname = "TRES"
-            , lvl = 80
-            , hpLeft = 0
-            , moves = listArray (0,0) [MonsterMove (Move "tackle" Normal True 15 20) 10]
-            , stats = Stats 10 10 10 10 10 10
-            , indV = Stats 10 10 10 10 10 10
-            , effV = Stats 10 10 10 10 10 10
-            , condition = NONE
-            }
-        ]
+rightTR team = Trainer
+    { active    = 0
+    , pokeballs = listArray (0, ((length team) - 1)) team
     , items = []
     }
